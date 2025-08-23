@@ -1,0 +1,2 @@
+To run nextjs - npm run dev
+To run convex db - npx convex dev
