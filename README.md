@@ -36,11 +36,6 @@ An interactive workspace for uploading, reading, and annotating PDFs with an int
 
 ---
 
-## 📸 Screenshots  
-(Add screenshots of your app here – dashboard, editor, AI answer, PDF export, etc.)  
-
----
-
 ## 🏗️ Installation  
 
 Clone the repo:  
