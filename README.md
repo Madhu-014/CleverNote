@@ -1,30 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 📑 AI-Powered PDF Workspace  
 
-## Getting Started
+An interactive workspace for uploading, reading, and annotating PDFs with an integrated **AI assistant** and **rich text editor**. Built with **Next.js, Convex, Clerk, Tiptap, and Gemini AI**, this project allows users to manage notes, search PDFs intelligently, and export their work seamlessly.  
 
-First, run the development server:
+---
 
+## ✨ Features  
+- 📂 **PDF Upload & Viewer** – Upload and view multiple PDF files in an organized dashboard.  
+- 📝 **Rich Text Editor (Tiptap)** – Create, edit, and highlight notes with formatting options (bold, italic, underline, lists, blockquotes, headings, alignment, etc.).  
+- 🤖 **AI Assistant Integration** – Ask questions about your PDF content, and the AI generates context-aware answers in HTML format.  
+- 💾 **Auto & Manual Save** – Notes are saved to **Convex DB** (auto + manual save options).  
+- 📤 **Export Notes as PDF** – Download your notes directly from the editor.  
+- 👤 **Authentication** – Secure sign-in/sign-up powered by **Clerk**.  
+- ⚡ **File Limits & Premium Mode** – Free users can upload up to 5 files. Premium unlocks unlimited uploads.  
+- 🎨 **Modern UI** – Clean design with toolbars, icons (Lucide React), and responsive layout.  
+
+---
+
+## 🛠️ Tech Stack  
+- **Frontend:** [Next.js 14](https://nextjs.org/) (App Router), React, TailwindCSS  
+- **Editor:** [Tiptap](https://tiptap.dev/) (custom toolbar)  
+- **Backend/Database:** [Convex](https://convex.dev/)  
+- **Auth:** [Clerk](https://clerk.dev/)  
+- **AI:** Google Gemini AI  
+- **PDF Handling:** jsPDF, React-PDF  
+
+---
+
+## 🚀 How It Works  
+1. **Sign up / log in** with Clerk.  
+2. **Upload a PDF** (up to 5 for free users).  
+3. Open the **workspace** → PDF viewer + note-taking editor side by side.  
+4. **Highlight text or ask questions** → AI generates contextual answers.  
+5. **Save notes** automatically or manually.  
+6. **Export notes as PDF** when done.  
+
+---
+
+## 📸 Screenshots  
+(Add screenshots of your app here – dashboard, editor, AI answer, PDF export, etc.)  
+
+---
+
+## 🏗️ Installation  
+
+Clone the repo:  
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+git clone https://github.com/yourusername/ai-pdf-workspace.git
+cd ai-pdf-workspace
