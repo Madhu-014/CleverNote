@@ -37,10 +37,6 @@
     }
   },
 
-  "buildOutputDirectory": ".next",
-  "cleanUrls": true,
-  "trailingSlash": false,
-
   "functions": {
     "app/api/**": {
       "memory": 1024,
