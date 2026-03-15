@@ -62,20 +62,39 @@ export default function UploadPdf() {
   const OnUpload = async () => {
     if (!file) return;
 
+    let fileId = null;
+    let storageId = null;
+
     try {
       setLoading(true);
       const postUrl = await generateUploadUrl();
 
+      // Step 1: Upload file to Convex storage
       const result = await fetch(postUrl, {
         method: "POST",
         headers: { "Content-Type": file?.type },
         body: file,
       });
-      const { storageId } = await result.json();
-      const fileId = uuid4();
+
+      if (!result.ok) {
+        throw new Error(`Storage upload failed: ${result.status} ${result.statusText}`);
+      }
+
+      const uploadData = await result.json();
+      storageId = uploadData?.storageId;
+      if (!storageId) {
+        throw new Error("No storage ID returned from upload");
+      }
+
+      fileId = uuid4();
       const fileurl = await getFileurl({ storageId });
 
-      await addFileEntry({
+      if (!fileurl) {
+        throw new Error("Failed to get file URL from storage");
+      }
+
+      // Step 2: Add file entry to database
+      const fileEntryResult = await addFileEntry({
         fileId,
         storageId,
         fileName: fileName || "Untitled File",
@@ -83,21 +102,60 @@ export default function UploadPdf() {
         createdBy: user?.primaryEmailAddress?.emailAddress,
       });
 
-      const ApiResp = await axios.get(
-        "/api/pdf-loader?pdfurl=" + encodeURIComponent(fileurl)
-      );
+      if (!fileEntryResult) {
+        throw new Error("Failed to create file entry in database");
+      }
 
-      await embeddDocument({
-        splitText: ApiResp.data.result,
+      // Step 3: Extract PDF chunks
+      let ApiResp;
+      try {
+        ApiResp = await axios.get(
+          "/api/pdf-loader?pdfurl=" + encodeURIComponent(fileurl),
+          { timeout: 130000 }
+        );
+      } catch (pdfError) {
+        if (pdfError.response?.status === 400) {
+          throw new Error("Invalid PDF file. Please ensure it's a valid PDF document.");
+        } else if (pdfError.response?.status === 413) {
+          throw new Error("PDF is too large. Please use a smaller PDF file.");
+        } else if (pdfError.response?.status === 504) {
+          throw new Error("PDF processing timed out. Please try a smaller file.");
+        } else if (pdfError.code === 'ECONNABORTED') {
+          throw new Error("PDF processing took too long. Please try a smaller file.");
+        }
+        throw new Error(`Failed to process PDF: ${pdfError.message}`);
+      }
+
+      const chunks = ApiResp?.data?.result || [];
+      if (!Array.isArray(chunks)) {
+        throw new Error("Invalid response format from PDF processor");
+      }
+
+      if (chunks.length === 0) {
+        throw new Error("No readable text found in PDF. Please ensure the PDF contains extractable text.");
+      }
+
+      if (chunks.length > 5000) {
+        throw new Error(`PDF produces too many chunks (${chunks.length}). Please use a smaller PDF.`);
+      }
+
+      // Step 4: Generate embeddings
+      const embedResult = await embeddDocument({
+        splitText: chunks,
         fileId,
       });
 
-      toast.success("✅ File uploaded & processed!");
+      if (!embedResult) {
+        throw new Error("Failed to generate embeddings for PDF content");
+      }
+
+      toast.success("✅ File uploaded & processed successfully!");
       removeFile();
       setOpen(false);
     } catch (err) {
-      toast.error("❌ Upload failed. Try again.");
-      console.error(err);
+      console.error("Upload error:", err);
+      const errorMessage = err?.message || err?.response?.data?.message || "Upload failed. Please try again.";
+      toast.error(`❌ ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -109,7 +167,7 @@ export default function UploadPdf() {
         <Button
           onClick={() => setOpen(true)}
           disabled={isMaxFile}
-          className="w-full"
+          className="w-full smooth-transition button-press hover-scale"
         >
           {isMaxFile ? (
             <span className="flex items-center gap-2 text-gray-500">
@@ -121,12 +179,12 @@ export default function UploadPdf() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg rounded-2xl border-border/60 bg-card/95 scale-in">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-xl font-semibold fade-slide-bottom">
             Upload a PDF
           </DialogTitle>
-          <DialogDescription className="text-gray-500">
+          <DialogDescription className="text-gray-500 fade-slide-bottom">
             {isMaxFile
               ? "🚫 You’ve reached your free limit of 5 files."
               : "Select or drag a PDF file to upload and index."}
@@ -136,11 +194,11 @@ export default function UploadPdf() {
         {!isMaxFile ? (
           <>
             {/* Upload Area */}
-            <div className="mt-5 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition relative">
+            <div className="relative mt-5 rounded-xl border-2 border-dashed border-border p-6 text-center smooth-transition hover:border-primary/60 bg-background/65 fade-slide-bottom">
               {!file ? (
                 <>
-                  <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
-                  <p className="mt-2 text-sm text-gray-600">
+                  <UploadCloud className="mx-auto h-10 w-10 text-muted-foreground smooth-spin" />
+                  <p className="mt-2 text-sm text-muted-foreground">
                     Drag & drop your PDF here, or click to browse
                   </p>
                   <input
@@ -152,14 +210,14 @@ export default function UploadPdf() {
                   />
                 </>
               ) : (
-                <div className="flex items-center justify-between gap-3 bg-gray-50 p-3 rounded-md">
+                <div className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-card p-3 scale-in">
                   <div className="flex items-center gap-2">
-                    <FileText className="h-6 w-6 text-blue-600" />
-                    <span className="text-gray-700 font-medium">
+                    <FileText className="h-6 w-6 text-primary" />
+                    <span className="text-foreground font-medium">
                       {file.name}
                     </span>
                   </div>
-                  <button onClick={removeFile}>
+                  <button onClick={removeFile} className="smooth-transition hover:scale-110">
                     <XCircle className="h-5 w-5 text-red-500 hover:text-red-700" />
                   </button>
                 </div>
@@ -168,32 +226,33 @@ export default function UploadPdf() {
 
             {/* File Name Input */}
             {file && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="mt-4 fade-slide-bottom">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   File Name *
                 </label>
                 <Input
                   placeholder="Enter file name"
                   value={fileName}
                   onChange={(e) => setFileName(e.target.value)}
+                  className="smooth-transition focus-visible:ring-2"
                 />
               </div>
             )}
 
             <DialogFooter className="mt-6 sm:justify-end">
               <DialogClose asChild>
-                <Button type="button" variant="secondary" onClick={removeFile}>
+                <Button type="button" variant="secondary" onClick={removeFile} className="smooth-transition button-press">
                   Cancel
                 </Button>
               </DialogClose>
               <Button
                 onClick={OnUpload}
                 disabled={loading || !file}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 smooth-transition button-press hover-scale"
               >
                 {loading ? (
                   <>
-                    <Loader2Icon className="h-4 w-4 animate-spin" /> Uploading...
+                    <Loader2Icon className="h-4 w-4 smooth-spin" /> Uploading...
                   </>
                 ) : (
                   "Upload"
@@ -202,14 +261,14 @@ export default function UploadPdf() {
             </DialogFooter>
           </>
         ) : (
-          <div className="mt-6 flex flex-col items-center text-center">
-            <Lock className="h-10 w-10 text-red-500 mb-3" />
-            <p className="text-gray-600">
-              You’ve reached the free limit of {fileLimit} files.  
+          <div className="mt-6 flex flex-col items-center text-center fade-slide-bottom">
+            <Lock className="h-10 w-10 text-red-500 mb-3 gentle-shake" />
+            <p className="text-muted-foreground">
+              You've reached the free limit of {fileLimit} files.  
               Upgrade to premium for unlimited uploads.
             </p>
-            <Link href="/pricing" className="mt-4">
-              <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-6 py-2 rounded-lg">
+            <Link href="/dashboard/upgrade" className="mt-4">
+              <Button className="px-6 py-2 rounded-lg smooth-transition button-press hover-lift">
                 Upgrade Now
               </Button>
             </Link>

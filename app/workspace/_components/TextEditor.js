@@ -24,7 +24,10 @@ function TextEditor() {
       Placeholder.configure({ placeholder: 'Ask a question about this PDF…' }),
     ],
     editorProps: {
-      attributes: { class: 'focus:outline-none p-5' }, // remove h-screen
+      attributes: {
+        class:
+          'tiptap doc-editor focus:outline-none px-5 py-6 md:px-8 md:py-8',
+      },
     },
     immediatelyRender: false,
   });
@@ -39,13 +42,13 @@ function TextEditor() {
   if (!editor) return null;
 
   return (
-    <div className="h-[90vh] flex flex-col border rounded-md">
+    <div className="flex h-full min-h-[45vh] flex-col rounded-xl border border-border/70 bg-background/80 lg:min-h-0">
       {/* Toolbar */}
       <EditorExtension editor={editor} />
       
       {/* Scrollable Editor */}
       <div className="flex-1 overflow-y-auto">
-        <EditorContent editor={editor} className="min-h-full" />
+        <EditorContent editor={editor} className="min-h-full text-foreground" />
       </div>
     </div>
   );

@@ -1,25 +1,46 @@
-const {
-    GoogleGenerativeAI,
-    HarmCategory,
-    HarmBlockThreshold,
-} = require("@google/generative-ai");
-
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey);
-
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+const responseAdapter = (text) => ({
+  response: {
+    candidates: [
+      {
+        content: {
+          parts: [{ text }],
+        },
+      },
+    ],
+  },
 });
-const generationConfig = {
-    temperature: 1,
-    topP: 0.95,
-    topK: 40,
-    maxOutputTokens: 8192,
-    responseMimeType: "text/plain",
+
+const coerceText = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    return value
+      .map((v) => (typeof v === "string" ? v : v?.text || v?.content || ""))
+      .join("\n")
+      .trim();
+  }
+  if (typeof value === "object") {
+    return value.text || value.content || "";
+  }
+  return String(value);
 };
 
-export const chatSession = model.startChat({
-    generationConfig,
-    history: [
-    ],
-});
+export const chatSession = {
+  sendMessage: async (prompt) => {
+    const response = await fetch("/api/ai-chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ prompt }),
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({}));
+      throw new Error(payload?.error || "AI request failed");
+    }
+
+    const payload = await response.json();
+    return responseAdapter(coerceText(payload?.text));
+  },
+};

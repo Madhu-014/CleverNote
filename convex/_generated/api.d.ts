@@ -18,6 +18,11 @@ import type * as langchain_db from "../langchain/db.js";
 import type * as myAction from "../myAction.js";
 import type * as notes from "../notes.js";
 import type * as user from "../user.js";
+import type * as utils_config from "../utils/config.js";
+import type * as utils_errors from "../utils/errors.js";
+import type * as utils_fileHelpers from "../utils/fileHelpers.js";
+import type * as utils_logger from "../utils/logger.js";
+import type * as utils_validators from "../utils/validators.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -33,6 +38,11 @@ declare const fullApi: ApiFromModules<{
   myAction: typeof myAction;
   notes: typeof notes;
   user: typeof user;
+  "utils/config": typeof utils_config;
+  "utils/errors": typeof utils_errors;
+  "utils/fileHelpers": typeof utils_fileHelpers;
+  "utils/logger": typeof utils_logger;
+  "utils/validators": typeof utils_validators;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

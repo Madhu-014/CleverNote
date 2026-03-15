@@ -1,0 +1,67 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "nodeVersion": "20.x",
+
+  "env": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": {
+      "description": "Clerk public key from https://dashboard.clerk.com",
+      "required": true
+    },
+    "CLERK_SECRET_KEY": {
+      "description": "Clerk secret key (keep private)",
+      "required": true
+    },
+    "NEXT_PUBLIC_CONVEX_URL": {
+      "description": "Production Convex deployment URL",
+      "required": true
+    },
+    "GROQ_API_KEY": {
+      "description": "Groq API key from https://console.groq.com",
+      "required": true
+    },
+    "GROQ_MODEL": {
+      "description": "Groq model to use",
+      "required": false,
+      "default": "openai/gpt-oss-120b"
+    },
+    "GEMINI_API_KEY": {
+      "description": "Google Generative AI key from https://aistudio.google.com",
+      "required": true
+    },
+    "CONVEX_DEPLOYMENT": {
+      "description": "Convex deployment ID",
+      "required": false
+    }
+  },
+
+  "buildOutputDirectory": ".next",
+  "cleanUrls": true,
+  "trailingSlash": false,
+
+  "functions": {
+    "app/api/**": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
+
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, must-revalidate"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https:;"
+        }
+      ]
+    }
+  ]
+}
