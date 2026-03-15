@@ -5,38 +5,6 @@
   "installCommand": "npm install",
   "framework": "nextjs",
 
-  "env": {
-    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": {
-      "description": "Clerk public key from https://dashboard.clerk.com",
-      "required": true
-    },
-    "CLERK_SECRET_KEY": {
-      "description": "Clerk secret key (keep private)",
-      "required": true
-    },
-    "NEXT_PUBLIC_CONVEX_URL": {
-      "description": "Production Convex deployment URL",
-      "required": true
-    },
-    "GROQ_API_KEY": {
-      "description": "Groq API key from https://console.groq.com",
-      "required": true
-    },
-    "GROQ_MODEL": {
-      "description": "Groq model to use",
-      "required": false,
-      "default": "openai/gpt-oss-120b"
-    },
-    "GEMINI_API_KEY": {
-      "description": "Google Generative AI key from https://aistudio.google.com",
-      "required": true
-    },
-    "CONVEX_DEPLOYMENT": {
-      "description": "Convex deployment ID",
-      "required": false
-    }
-  },
-
   "functions": {
     "app/api/**": {
       "memory": 1024,
