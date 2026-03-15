@@ -1,0 +1,33 @@
+# Python dependencies for CleverNote deployment and utilities
+# This project is primarily Node.js/JavaScript, but these packages support
+# deployment automation, environment management, and development tools
+
+# Environment management
+python-dotenv==1.0.0
+
+# API and HTTP utilities
+requests==2.31.0
+
+# AWS deployment support (optional)
+boto3==1.34.0
+
+# Common development utilities
+click==8.1.7
+colorama==0.4.6
+
+# JSON processing
+jsonschema==4.20.0
+
+# YAML handling (for config files)
+PyYAML==6.0.1
+
+# Code quality and testing
+black==23.12.1
+flake8==6.1.0
+pytest==7.4.3
+
+# Type checking
+mypy==1.7.1
+
+# Production deployment helpers
+gunicorn==21.2.0  # If running any Python backend services
